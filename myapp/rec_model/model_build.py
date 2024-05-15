@@ -35,7 +35,7 @@ ratings, movies = load_data()
 
 net = EmbeddingNet(
     n_users=n, n_movies=m,
-    n_factors=20, hidden=[500],
+    n_factors=50, hidden=[500],
     embedding_dropout=0.05, dropouts=[0.25])
 
 # print(net)

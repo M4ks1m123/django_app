@@ -1,26 +1,7 @@
-import io
-import os
 import math
-import copy
-import pickle
-import zipfile
-from textwrap import wrap
-from pathlib import Path
-from itertools import zip_longest
-from collections import defaultdict
-from urllib.error import URLError
-from urllib.request import urlopen
-
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-
 import torch
-from torch import nn
-from torch import optim
-from torch.nn import functional as F
-from torch.optim.lr_scheduler import _LRScheduler
 
 def load_data():
     ratings, movies = pd.read_csv('C:/Users/Caster/Desktop/django_app/mysite/myapp/rec_model/data/Ratings.csv'), pd.read_csv('C:/Users/Caster/Desktop/django_app/mysite/myapp/rec_model/data/Books.csv')
@@ -54,6 +35,42 @@ def create_dataset(ratings, top=None):
     y = ratings['rating'].astype(np.float32)
     return (n_users, n_movies), (X, y), (user_to_index, movie_to_index)
 
+class ReviewsIterator:
+
+    def __init__(self, X, y, batch_size=32, shuffle=True):
+        X, y = np.asarray(X), np.asarray(y)
+
+        if shuffle:
+            index = np.random.permutation(X.shape[0])
+            X, y = X[index], y[index]
+
+        self.X = X
+        self.y = y
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.n_batches = int(math.ceil(X.shape[0] // batch_size))
+        self._current = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.next()
+
+    def next(self):
+        if self._current >= self.n_batches:
+            raise StopIteration()
+        k = self._current
+        self._current += 1
+        bs = self.batch_size
+        return self.X[k*bs:(k + 1)*bs], self.y[k*bs:(k + 1)*bs]
+
+def batches(X, y, bs=32, shuffle=True):
+    for xb, yb in ReviewsIterator(X, y, bs, shuffle):
+        xb = torch.LongTensor(xb)
+        yb = torch.FloatTensor(yb)
+        yield xb, yb.view(-1, 1)
+        
 ratings, movies = load_data()
 
 # print(ratings.size)

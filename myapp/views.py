@@ -14,6 +14,6 @@ def recommend_movies():
     similarity, results_df = predict_movies('movie_embed', 8, 10, 100000)
     return results_df.title[:10].tolist()
 
-def todos(request):
+def recommendations(request):
     # items = ['todo1', 'todo2', 'todo3']
-    return render(request, "todos.html", {"todos": recommend_movies()})
+    return render(request, "recommendations.html", {"todos": recommend_movies()})

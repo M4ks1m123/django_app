@@ -1,19 +1,15 @@
-from django.shortcuts import render, HttpResponse
-from myapp.functions import get_todos
-from myapp.rec_model.model_build import predict_movies
+from django.shortcuts import render
+
+from myapp.rec_model.model_build import predict_books
 
 def home(request):
     return render(request, "home.html")
 
-# def get_todos():
-#     items = ['todo12', 'todo22', 'todo32']
-#     return items
 
-
-def recommend_movies():
-    similarity, results_df = predict_movies('movie_embed', 8, 10, 100000)
+def recommend_books():
+    similarity, results_df = predict_books(8, 100000)
     return results_df.title[:10].tolist()
 
+
 def recommendations(request):
-    # items = ['todo1', 'todo2', 'todo3']
-    return render(request, "recommendations.html", {"todos": recommend_movies()})
+    return render(request, "recommendations.html", {"books": recommend_books()})

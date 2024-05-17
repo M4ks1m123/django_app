@@ -1,9 +1,9 @@
 {% block content%}
-<h1>Todo list</h1>
+<h1>Recommendation list</h1>
 <ul>
-    {% for todo in todos %}
+    {% for book in books %}
     <li>
-        {{ todo.title}}: {% if todo.completed %}Completed{% else %}Not Completed{% endif%}
+        {{ book.title}}
     <li>
     {% endfor %}
 <ul>

@@ -1,5 +1,5 @@
-from model_build import predict_movies
+from model_build import predict_books
 
-similarity, results_df = predict_movies('movie_embed', 8, 10, 100000)
+similarity, results_df = predict_books('book_embed', 8, 10, 100000)
 
 print(results_df.title[:10].tolist())

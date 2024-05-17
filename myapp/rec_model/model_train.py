@@ -1,42 +1,26 @@
 
 import numpy as np
 import pandas as pd
-
 import torch
 import torch.nn as nn
-
 from pathlib import Path
-
-import io
-import os
 import math
 import copy
-import pickle
-import zipfile
-from textwrap import wrap
 from pathlib import Path
-from itertools import zip_longest
-from collections import defaultdict
-from urllib.error import URLError
-from urllib.request import urlopen
-
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-
 import torch
 from torch import nn
 from torch import optim
-from torch.nn import functional as F
-from torch.optim.lr_scheduler import _LRScheduler
 
-from sklearn.metrics.pairwise import cosine_similarity
 
-from data_processing import batches, create_dataset, load_data
+from data_processing import batches, create_dataset
+from load_data import load_data
+
 from model_config import RecommendationModel
 
-ratings, movies = load_data()
+ratings, books = load_data()
 
 def set_random_seed(state=1):
     gens = (np.random.seed, torch.manual_seed, torch.cuda.manual_seed)
@@ -48,12 +32,12 @@ set_random_seed(RANDOM_STATE)
 
 
 (n, m), (X, y), _ = create_dataset(ratings)
-# print(f'Embeddings: {n} users, {m} movies')
+# print(f'Embeddings: {n} users, {m} books')
 # print(f'Dataset shape: {X.shape}')
 # print(f'Target shape: {y.shape}')
 
 net = RecommendationModel(
-    n_users=n, n_movies=m,
+    n_users=n, n_books=m,
     n_factors=20, hidden=[500],
     embedding_dropout=0.05, dropouts=[0.25])
 
@@ -61,10 +45,10 @@ X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2, rando
 datasets = {'train': (X_train, y_train), 'val': (X_valid, y_valid)}
 dataset_sizes = {'train': len(X_train), 'val': len(X_valid)}
 
-lr = 1e-3
+lr = 1e-4
 wd = 1e-5
 bs = 2000
-n_epochs = 1
+n_epochs = 10
 patience = 10
 no_improvements = 0
 best_loss = np.inf

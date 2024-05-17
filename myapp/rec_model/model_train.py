@@ -13,6 +13,7 @@ from sklearn.model_selection import train_test_split
 import torch
 from torch import nn
 from torch import optim
+import matplotlib.pyplot as plt
 
 
 from data_processing import batches, create_dataset
@@ -36,7 +37,7 @@ set_random_seed(RANDOM_STATE)
 # print(f'Dataset shape: {X.shape}')
 # print(f'Target shape: {y.shape}')
 
-net = RecommendationModel(
+recommendation_model = RecommendationModel(
     n_users=n, n_books=m,
     n_factors=20, hidden=[500],
     embedding_dropout=0.05, dropouts=[0.25])
@@ -48,7 +49,7 @@ dataset_sizes = {'train': len(X_train), 'val': len(X_valid)}
 lr = 1e-4
 wd = 1e-5
 bs = 2000
-n_epochs = 10
+n_epochs = 100
 patience = 10
 no_improvements = 0
 best_loss = np.inf
@@ -61,9 +62,9 @@ minmax
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-net.to(device)
+recommendation_model.to(device)
 criterion = nn.MSELoss(reduction='sum')
-optimizer = optim.Adam(net.parameters(), lr=lr, weight_decay=wd)
+optimizer = optim.Adam(recommendation_model.parameters(), lr=lr, weight_decay=wd)
 iterations_per_epoch = int(math.ceil(dataset_sizes['train'] // bs))
 # scheduler = CyclicLR(optimizer, cosine(t_max=iterations_per_epoch * 2, eta_min=lr/10))
 
@@ -80,7 +81,7 @@ for epoch in range(n_epochs):
             optimizer.zero_grad()
             # compute gradients only during 'train' phase
             with torch.set_grad_enabled(training):
-                outputs = net(x_batch[:, 0], x_batch[:, 1], minmax)
+                outputs = recommendation_model(x_batch[:, 0], x_batch[:, 1], minmax)
                 loss = criterion(outputs, y_batch)
 
                 # don't update weights and rates when in 'val' phase
@@ -100,7 +101,7 @@ for epoch in range(n_epochs):
             if epoch_loss < best_loss:
                 print('loss improvement on epoch: %d' % (epoch + 1))
                 best_loss = epoch_loss
-                best_weights = copy.deepcopy(net.state_dict())
+                best_weights = copy.deepcopy(recommendation_model.state_dict())
                 no_improvements = 0
             else:
                 no_improvements += 1
@@ -112,28 +113,30 @@ for epoch in range(n_epochs):
         break
     
 ax = pd.DataFrame(history).drop(columns='total').plot(x='epoch')
+ax.plot()
+plt.show()
 
-groud_truth, predictions = [], []
+ground_truth, predictions = [], []
 
 with torch.no_grad():
     for batch in batches(*datasets['val'], shuffle=False, bs=bs):
         x_batch, y_batch = [b.to(device) for b in batch]
-        outputs = net(x_batch[:, 0], x_batch[:, 1], minmax)
+        outputs = recommendation_model(x_batch[:, 0], x_batch[:, 1], minmax)
         # print(outputs)
-        groud_truth.extend(y_batch.tolist())
+        ground_truth.extend(y_batch.tolist())
         predictions.extend(outputs.tolist())
 
-groud_truth = np.asarray(groud_truth).ravel()
+ground_truth = np.asarray(ground_truth).ravel()
 predictions = np.asarray(predictions).ravel()
 
-final_loss = np.sqrt(np.mean((np.array(predictions) - np.array(groud_truth))**2))
+final_loss = np.sqrt(np.mean((np.array(predictions) - np.array(ground_truth))**2))
 print(f'Final RMSE: {final_loss:.4f}')
 
 MODEL_PATH = Path("C:/Users/Caster/Desktop/django_app/mysite/myapp/rec_model/model_state_dict/")
 MODEL_PATH.mkdir(parents=True, exist_ok=True)
 
-MODEL_NAME = 'net_model1.pth'
+MODEL_NAME = 'recommendation_model.pth'
 MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME
 
 print(f'Saving model to: {MODEL_SAVE_PATH}')
-torch.save(obj=net.state_dict(), f=MODEL_SAVE_PATH)
+torch.save(obj=recommendation_model.state_dict(), f=MODEL_SAVE_PATH)

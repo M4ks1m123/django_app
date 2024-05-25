@@ -1,0 +1,15 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'myapp/style.css' %}">
+
+{% block content%}
+
+<h1>Рекомендации для пользователя {{id}}</h1>
+<ul>
+    {% for book in books %}
+    <li>
+        {{book.title}}
+    </li>
+    {% endfor %}
+<ul>
+{% endblock %}

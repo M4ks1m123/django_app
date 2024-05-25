@@ -1,0 +1,22 @@
+* {
+    background-color: rgba(188, 255, 255, 0.819);
+}
+
+ul {
+    list-style-type: none;
+}
+
+
+li {
+    
+    color: rgb(1, 51, 100);
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 10px;
+    font-size: 24px;
+    
+}
+
+h1 {
+    color: rgb(1, 51, 100);
+    font-family: Arial, Helvetica, sans-serif; 
+}
